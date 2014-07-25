@@ -21,3 +21,7 @@ _testmain.go
 
 *.exe
 *.test
+/wsclient
+/wsclient.go~
+/wsechoserver
+/wsechoserver.go~
