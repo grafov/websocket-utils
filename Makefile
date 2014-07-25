@@ -1,16 +1,26 @@
 # Websocket utils
 
+export GOPATH=$(HOME)/go
 LDFLAGS="-s -X main.Build `date -u +%Y%m%d%H%M%S`"
 
 all: wsclient wsechoserver
 
-# Build with dependencies (for go >= 1.3)
-wsclient: wsclient.go
-	GOPATH=~/go go build -i -ldflags $(LDFLAGS) -o wsclient wsclient.go
+# To build with dependencies for go >= 1.3 use `go build -i` and skip step below
+deps:
+	go get github.com/gorilla/websocket
+	go get github.com/kdar/factorlog
+	go get github.com/peterh/liner
 
-# Build with dependencies (for go >= 1.3)
+wsclient: wsclient.go
+	go build -ldflags $(LDFLAGS) -o wsclient wsclient.go
+
 wsechoserver: wsechoserver.go
-	GOPATH=~/go go build -i -ldflags $(LDFLAGS) -o wsechoserver wsechoserver.go
+	go build -ldflags $(LDFLAGS) -o wsechoserver wsechoserver.go
+
+build: wsclient wsechoserver
+
+test:
+	go test -v
 
 # Remove temporary files
 clean:
