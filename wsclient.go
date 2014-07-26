@@ -29,9 +29,12 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/kdar/factorlog"
 	"github.com/peterh/liner"
+	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/signal"
+	"strings"
 	"time"
 )
 
@@ -214,15 +217,6 @@ func (c wscon) textIO() {
 		}
 	}()
 
-	// line.SetCompleter(func(line string) (c []string) {
-	// 	for _, n := range names {
-	// 		if strings.HasPrefix(n, strings.ToLower(line)) {
-	// 			c = append(c, n)
-	// 		}
-	// 	}
-	// 	return
-	// })
-
 	if f, err := os.Open(history); err == nil {
 		line.ReadHistory(f)
 		f.Close()
@@ -232,6 +226,27 @@ func (c wscon) textIO() {
 		if text, err := line.Prompt(fmt.Sprintf("%s >> ", *bind)); err != nil {
 			log.Print("Error reading line: ", err)
 		} else {
+			if len(text) == 0 {
+				continue
+			}
+			cmdline := strings.TrimSpace(text)
+			switch cmdline[0] {
+			case '!': // get output from external cmd
+				cmd := exec.Command("bash", "-c", cmdline[1:])
+				if extout, err := cmd.Output(); err != nil {
+					log.Errorf("External command %s failed", cmd)
+					continue
+				} else {
+					text = string(extout)
+				}
+			case '<': // load from file
+				if data, err := ioutil.ReadFile(cmdline[1:]); err != nil {
+					log.Errorf("can't load file %s", cmdline[1:])
+					continue
+				} else {
+					text = string(data)
+				}
+			}
 			stamp := time.Now()
 			c.TextIn <- bytes.NewBufferString(text)
 			line.AppendHistory(text)
