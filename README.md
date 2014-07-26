@@ -1,7 +1,8 @@
-Websocket utils
-===============
+Websocket utilities
+===================
 
-Simple CLI utils for testing websocket (RFC4655) connections.
+Utilities for debug websocket (RFC4655) connections.
+These utilities will not dig deep and will not show you internals of the protocols (use Wireshark instead). But with them you just have simple way to establish connection with your websocket server and send test messages or connect to echo server for testing your client.
 Currently are:
 
 * wsclient — allows you to establish websocket connection with server and send text messages from command line.
@@ -39,3 +40,23 @@ Makefile supplied to use `make` instead direct usage of go compiler.
 
     make deps
     make build
+
+Echo server
+===========
+
+Just run it with `-verb` and/or `-debug` args. By default it listen on localhost:48084 but you may point it to another host:port with `-listen` parameter.
+
+Client
+======
+
+After connect to a websocket server client waits for input. Any input will send to remote server. Except two special cases:
+
+1. If you starts text with `!` followed by command(s) then external command(s) will executed and its output will send to server:
+
+    ! ls *.txt; date
+
+2. If you starts text with `<` followed by filename then this file loads and its content send to server.
+
+    < sample.json
+
+Any other string sequences will send as is.
