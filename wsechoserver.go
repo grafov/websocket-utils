@@ -33,11 +33,11 @@ import (
 )
 
 const (
-	VERSION    = "0.1.1"
 	WS_TIMEOUT = 12 * time.Second
 )
 
 var (
+	Version    string // value set by compiler
 	Build      string // value set by compiler
 	log        *factorlog.FactorLog
 	listen     = flag.String("listen", "127.1:48084", "listen HTTP requests at addr:port")
@@ -80,8 +80,7 @@ func init() {
 }
 
 func main() {
-	log.Infof("Websocket echo server ver. %s (build %s)", VERSION, Build)
-	log.Infof("© 2014, TightVideo Ltd.")
+	log.Infof("Websocket echo server ver. %s (build %s)", Version, Build)
 
 	wsEcho()
 

@@ -38,11 +38,8 @@ import (
 	"time"
 )
 
-const (
-	VERSION = "0.1.1"
-)
-
 var (
+	Version        string // value set by compiler
 	Build          string // value set by compiler
 	err            error
 	log            *factorlog.FactorLog
@@ -95,7 +92,7 @@ func init() {
 }
 
 func main() {
-	log.Infof("Websocket client ver. %s (build %s)", VERSION, Build)
+	log.Infof("Websocket client ver. %s (build %s)", Version, Build)
 
 	wsclosed := make(chan bool)
 	wsInit()
