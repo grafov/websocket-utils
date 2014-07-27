@@ -26,9 +26,9 @@ Build from source
 
 You need go environment then install external packages:
 
-* go get github.com/gorilla/websocket
-* go get github.com/kdar/factorlog
-* go get github.com/peterh/liner
+    go get github.com/gorilla/websocket
+    go get github.com/kdar/factorlog
+    go get github.com/peterh/liner
 
 Then install and updat package with:
 
@@ -53,10 +53,10 @@ After connect to a websocket server client waits for input. Any input will send 
 
 1. If you starts text with `!` followed by command(s) then external command(s) will executed and its output will send to server:
 
-    ! ls *.txt; date
+    `! ls *.txt; date`
 
 2. If you starts text with `<` followed by filename then this file loads and its content send to server.
 
-    < sample.json
+    `< sample.json`
 
 Any other string sequences will send as is.
