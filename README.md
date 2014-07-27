@@ -32,7 +32,7 @@ You need go environment then install external packages:
 
 Then install and updat package with:
 
-  go get github.com/grafov/websocket-utils
+    go get github.com/grafov/websocket-utils
 
 For go 1.3 just use `build -i` for autoinstall external packages during build.
 
