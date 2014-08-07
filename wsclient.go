@@ -31,6 +31,7 @@ import (
 	"github.com/peterh/liner"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -43,8 +44,8 @@ var (
 	Build          string // value set by compiler
 	err            error
 	log            *factorlog.FactorLog
+	listenURL      *url.URL
 	history        = "~/.wsclient_history"
-	bind           = flag.String("bind", "127.1:48084", "bind HTTP requests to addr:port")
 	ping           = flag.Bool("ping", true, "ping clients and response to ping requests")
 	wsClient       wscon
 	wsTestUpgrader = websocket.Upgrader{
@@ -67,9 +68,11 @@ func init() {
 		logFmt string
 		debug  = flag.Bool("debug", false, "debug dispatch")
 		verb   = flag.Bool("verb", false, "verbose dispatch")
+		bind   = flag.String("bind", "127.1:48084", "bind HTTP requests to addr:port/path")
 	)
 
 	flag.Parse()
+	listenURL, err = url.Parse(*bind)
 
 	if *debug {
 		// brief format for debug
@@ -88,6 +91,14 @@ func init() {
 		log.SetMinMaxSeverity(factorlog.INFO, factorlog.PANIC)
 	default:
 		log.SetMinMaxSeverity(factorlog.WARN, factorlog.PANIC)
+	}
+
+	if err != nil {
+		log.Criticalf("bad url %s", *bind)
+		os.Exit(1)
+	}
+	if listenURL.Path == "" {
+		listenURL.Path = "/"
 	}
 }
 
@@ -114,7 +125,7 @@ func main() {
 // Establishes websocket connection.
 func wsInit() {
 	h := make(http.Header)
-	wsClient.Conn, _, err = dialer.Dial(fmt.Sprintf("ws://%s/ws", *bind), h)
+	wsClient.Conn, _, err = dialer.Dial(fmt.Sprintf("ws://%s%s", listenURL.Host, listenURL.Path), h)
 	if err != nil {
 		log.Fatalf("can't connect to WS server with %s", err)
 	}
@@ -220,7 +231,7 @@ func (c wscon) textIO() {
 	}
 
 	for {
-		if text, err := line.Prompt(fmt.Sprintf("%s >> ", *bind)); err != nil {
+		if text, err := line.Prompt(fmt.Sprintf("%s%s >> ", listenURL.Host, listenURL.Path)); err != nil {
 			log.Print("Error reading line: ", err)
 		} else {
 			if len(text) == 0 {

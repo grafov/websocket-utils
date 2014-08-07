@@ -27,6 +27,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/kdar/factorlog"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"time"
@@ -40,7 +41,7 @@ var (
 	Version    string // value set by compiler
 	Build      string // value set by compiler
 	log        *factorlog.FactorLog
-	listen     = flag.String("listen", "127.1:48084", "listen HTTP requests at addr:port")
+	listenURL  *url.URL
 	ping       = flag.Bool("ping", true, "ping clients and response to ping requests")
 	wsUpgrader = websocket.Upgrader{
 		ReadBufferSize:  4096,
@@ -52,12 +53,15 @@ var (
 // It don't matter in regular program run but critical for unit tests.
 func init() {
 	var (
-		logFmt string
 		debug  = flag.Bool("debug", false, "debug output")
 		verb   = flag.Bool("verb", false, "verbose output")
+		listen = flag.String("listen", "http://127.1:48084/ws", "listen HTTP requests at addr:port/path")
+		logFmt string
+		err    error
 	)
 
 	flag.Parse()
+	listenURL, err = url.Parse(*listen)
 
 	if *debug {
 		// brief format for debug
@@ -77,6 +81,14 @@ func init() {
 	default:
 		log.SetMinMaxSeverity(factorlog.WARN, factorlog.PANIC)
 	}
+
+	if err != nil {
+		log.Criticalf("bad url %s", *listen)
+		os.Exit(1)
+	}
+	if listenURL.Path == "" {
+		listenURL.Path = "/"
+	}
 }
 
 func main() {
@@ -94,14 +106,14 @@ func main() {
 func wsEcho() {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc(listenURL.Path, func(w http.ResponseWriter, r *http.Request) {
 
 		var (
 			wscon *websocket.Conn
 			err   error
 		)
 
-		if r.URL.Path != "/ws" {
+		if r.URL.Path != listenURL.Path {
 			http.Error(w, "resource not found", http.StatusNotFound)
 			log.Errorf("%d not found\n", http.StatusNotFound)
 			return
@@ -140,12 +152,11 @@ func wsEcho() {
 	})
 
 	go func(mux *http.ServeMux) {
-		if err := http.ListenAndServe(*listen, mux); err != nil {
-			log.Fatalf("WS echo server failed at %s with %s", *listen, err)
+		if err := http.ListenAndServe(listenURL.Host, mux); err != nil {
+			log.Fatalf("WS echo server failed at %s with %s", listenURL.Host, err)
 		}
 	}(mux)
-	log.Infof("WS echo server listens at %s", *listen)
-
+	log.Infof("WS echo server listens at %s%s", listenURL.Host, listenURL.Path)
 }
 
 // Set timeout depends on the ping
