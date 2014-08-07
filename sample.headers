@@ -1,0 +1,9 @@
+Accept: */*
+Accept-Encoding: gzip, deflate
+Connection: Upgrade
+Cookie: devid=1234; uid=123
+Sec-WebSocket-Key: x3JJHMbDL1EzLkh9GBhXDw==
+Sec-WebSocket-Protocol:  chat, superchat
+Sec-WebSocket-Version:  13
+Upgrade: websocket
+User-Agent: HTTPie/0.8.0

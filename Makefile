@@ -1,7 +1,8 @@
 # Websocket utils
 
 export GOPATH=$(HOME)/go
-LDFLAGS="-s -X main.Build `date -u +%Y%m%d%H%M%S` -X main.Version 0.1.2"
+LDFLAGS="-s -X main.Build `date -u +%Y%m%d%H%M%S` -X main.Version 0.2"
+INSTALL=install
 
 all: wsclient wsechoserver
 
@@ -21,6 +22,10 @@ build: wsclient wsechoserver
 
 test:
 	go test -v
+
+install: all
+	sudo $(INSTALL) wsclient /usr/local/bin
+	sudo $(INSTALL) wsechoserver /usr/local/bin
 
 # Remove temporary files
 clean:

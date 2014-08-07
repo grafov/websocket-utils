@@ -6,7 +6,7 @@ package main
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
+ the Free Soft ware Foundation, either version 3 of the License, or
  (at your option) any later version.
 
  This program is distributed in the hope that it will be useful,
@@ -44,9 +44,10 @@ var (
 	Build          string // value set by compiler
 	err            error
 	log            *factorlog.FactorLog
-	listenURL      *url.URL
+	bindURL        *url.URL
 	history        = "~/.wsclient_history"
 	ping           = flag.Bool("ping", true, "ping clients and response to ping requests")
+	headers        = flag.String("headers", "", "file with custom HTTP headers for client handshake")
 	wsClient       wscon
 	wsTestUpgrader = websocket.Upgrader{
 		ReadBufferSize:  4096,
@@ -72,7 +73,7 @@ func init() {
 	)
 
 	flag.Parse()
-	listenURL, err = url.Parse(*bind)
+	bindURL, err = url.Parse(*bind)
 
 	if *debug {
 		// brief format for debug
@@ -97,8 +98,8 @@ func init() {
 		log.Criticalf("bad url %s", *bind)
 		os.Exit(1)
 	}
-	if listenURL.Path == "" {
-		listenURL.Path = "/"
+	if bindURL.Path == "" {
+		bindURL.Path = "/"
 	}
 }
 
@@ -125,7 +126,21 @@ func main() {
 // Establishes websocket connection.
 func wsInit() {
 	h := make(http.Header)
-	wsClient.Conn, _, err = dialer.Dial(fmt.Sprintf("ws://%s%s", listenURL.Host, listenURL.Path), h)
+	if customHeaders, err := ioutil.ReadFile(*headers); err != nil {
+		log.Errorf("can't read HTTP headers from %s", *headers)
+	} else {
+		for _, line := range strings.Split(string(customHeaders), "\n") {
+			keyval := strings.SplitN(line, ":", 2)
+			if len(keyval) == 2 {
+				h.Add(keyval[0], keyval[1])
+			}
+		}
+		if h.Get("Host") == "" {
+			// if host skiped in the headers then it added as RFC2616 requires
+			h.Set("Host", bindURL.Host)
+		}
+	}
+	wsClient.Conn, _, err = dialer.Dial(fmt.Sprintf("ws://%s%s", bindURL.Host, bindURL.Path), h)
 	if err != nil {
 		log.Fatalf("can't connect to WS server with %s", err)
 	}
@@ -231,7 +246,7 @@ func (c wscon) textIO() {
 	}
 
 	for {
-		if text, err := line.Prompt(fmt.Sprintf("%s%s >> ", listenURL.Host, listenURL.Path)); err != nil {
+		if text, err := line.Prompt(fmt.Sprintf("%s%s >> ", bindURL.Host, bindURL.Path)); err != nil {
 			log.Print("Error reading line: ", err)
 		} else {
 			if len(text) == 0 {
