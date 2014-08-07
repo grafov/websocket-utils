@@ -1,4 +1,4 @@
-Websocket utilities
+Websocket utilities [![Is maintained?](http://stillmaintained.com/grafov/websocket-utils.png)](http://stillmaintained.com/grafov/websocket-utils)
 ===================
 
 Utilities for debug websocket (RFC4655) connections.
