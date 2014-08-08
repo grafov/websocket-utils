@@ -126,21 +126,29 @@ func main() {
 // Establishes websocket connection.
 func wsInit() {
 	h := make(http.Header)
-	if customHeaders, err := ioutil.ReadFile(*headers); err != nil {
-		log.Errorf("can't read HTTP headers from %s", *headers)
-	} else {
-		for _, line := range strings.Split(string(customHeaders), "\n") {
-			keyval := strings.SplitN(line, ":", 2)
-			if len(keyval) == 2 {
-				h.Add(keyval[0], keyval[1])
+	if *headers != "" {
+		if customHeaders, err := ioutil.ReadFile(*headers); err != nil {
+			log.Errorf("can't read HTTP headers from %s", *headers)
+		} else {
+			for _, line := range strings.Split(string(customHeaders), "\n") {
+				keyval := strings.SplitN(line, ":", 2)
+				if len(keyval) == 2 {
+					h.Add(keyval[0], keyval[1])
+				}
+			}
+			if h.Get("Host") == "" {
+				// if host skiped in the headers then it added as RFC2616 requires
+				h.Set("Host", bindURL.Host)
 			}
 		}
-		if h.Get("Host") == "" {
-			// if host skiped in the headers then it added as RFC2616 requires
-			h.Set("Host", bindURL.Host)
-		}
 	}
-	wsClient.Conn, _, err = dialer.Dial(fmt.Sprintf("ws://%s%s", bindURL.Host, bindURL.Path), h)
+	var proto string
+	if bindURL.Scheme != "" {
+		proto = bindURL.Scheme
+	} else {
+		proto = "ws"
+	}
+	wsClient.Conn, _, err = dialer.Dial(fmt.Sprintf("%s://%s%s", proto, bindURL.Host, bindURL.Path), h)
 	if err != nil {
 		log.Fatalf("can't connect to WS server with %s", err)
 	}

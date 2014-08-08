@@ -5,8 +5,8 @@ Utilities for debug websocket (RFC4655) connections.
 These utilities will not dig deep and will not show you internals of the protocols (use Wireshark instead). But with them you just have simple way to establish connection with your websocket server and send test messages or connect to echo server for testing your client.
 Currently are:
 
-* wsclient — allows you to establish websocket connection with server and send text messages from command line.
-* wsechoserver — just reply back messages it received.
+* wsclient — allows you to establish websocket connection with websocket server and send text messages from command line.
+* wsechoserver — just reply back messages it received from websocket client.
 
 Install
 =======
@@ -59,3 +59,7 @@ After connect to websocket server client waits for input. Any input will send to
     `< sample.json`
 
 Any other string sequences will send as is.
+
+Try it for example as:
+
+    wsclient -bind=echo.websocket.org
