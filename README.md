@@ -19,7 +19,7 @@ Prebuilt binaries provided for Linux x86_64:
 * https://drone.io/github.com/grafov/websocket-utils/files/wsechoserver
 * https://drone.io/github.com/grafov/websocket-utils/files/wsclient
 
-Download and place to $PATH.
+Download and place them to $PATH.
 
 Build from source
 -----------------
@@ -30,7 +30,7 @@ You need go environment then install external packages:
     go get github.com/kdar/factorlog
     go get github.com/peterh/liner
 
-Then install and updat package with:
+Then install and update package with:
 
     go get github.com/grafov/websocket-utils
 
@@ -38,8 +38,7 @@ For go 1.3 just use `build -i` for autoinstall external packages during build.
 
 Makefile supplied to use `make` instead direct usage of go compiler.
 
-    make deps
-    make build
+    make deps && make build && make install
 
 Echo server
 ===========
@@ -49,13 +48,13 @@ Just run it with `-verb` and/or `-debug` args. By default it listen on localhost
 Client
 ======
 
-After connect to a websocket server client waits for input. Any input will send to remote server. Except two special cases:
+After connect to websocket server client waits for input. Any input will send to remote server. Except two special cases:
 
-1. If you starts text with `!` followed by command(s) then external command(s) will executed and its output will send to server:
+1. If you start text with `!` followed by command(s) then external command(s) will executed and its output will send to a server:
 
     `! ls *.txt; date`
 
-2. If you starts text with `<` followed by filename then this file loads and its content send to server.
+2. If you start text with `<` followed by filename then this file loads and its content send to server.
 
     `< sample.json`
 
