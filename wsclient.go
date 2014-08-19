@@ -49,6 +49,7 @@ var (
 	ping           = flag.Bool("ping", true, "ping clients and response to ping requests")
 	headers        = flag.String("headers", "", "file with custom HTTP headers for client handshake")
 	wsClient       wscon
+	stamp          time.Time
 	wsTestUpgrader = websocket.Upgrader{
 		ReadBufferSize:  4096,
 		WriteBufferSize: 4096,
@@ -108,7 +109,8 @@ func main() {
 
 	wsclosed := make(chan bool)
 	wsInit()
-	go wsClient.textIO()
+	go wsClient.textIn()
+	go wsClient.textOut()
 	go wsClient.dispatch(wsclosed)
 	//wsClient.pongDispatcher(8 * time.Second)
 
@@ -154,7 +156,7 @@ func wsInit() {
 	}
 	wsClient.Inbox = make(chan wsmsg, 32)
 	wsClient.TextIn = make(chan *bytes.Buffer, 8)
-	wsClient.TextOut = make(chan *bytes.Buffer)
+	wsClient.TextOut = make(chan *bytes.Buffer, 8)
 }
 
 // Реквизиты соединения и каналы обмена данными.
@@ -236,7 +238,8 @@ func (c wscon) send(op int, data *bytes.Buffer) error {
 }
 
 // Собирает данные для отправки из stdin
-func (c wscon) textIO() {
+func (c wscon) textIn() {
+
 	line := liner.NewLiner()
 	defer func() {
 		line.Close()
@@ -278,12 +281,19 @@ func (c wscon) textIO() {
 					text = string(data)
 				}
 			}
-			stamp := time.Now()
 			c.TextIn <- bytes.NewBufferString(text)
+			stamp = time.Now()
 			line.AppendHistory(text)
-			out := <-c.TextOut
-			fmt.Printf("<< [%s] %s\n", time.Since(stamp), out.String())
 		}
+	}
+}
+
+// Собирает данные для отправки из stdin
+func (c wscon) textOut() {
+	for {
+		out := <-c.TextOut
+		fmt.Printf("\n<< [%s] %s", time.Since(stamp), out.String())
+		fmt.Printf("\n%s%s >> ", bindURL.Host, bindURL.Path)
 	}
 }
 
