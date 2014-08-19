@@ -1,7 +1,7 @@
 # Websocket utils
 
 export GOPATH=$(HOME)/go
-LDFLAGS="-s -X main.Build `date -u +%Y%m%d%H%M%S` -X main.Version 0.2.2"
+LDFLAGS="-s -X main.Build `date -u +%Y%m%d%H%M%S` -X main.Version 0.3"
 INSTALL=install
 
 all: wsclient wsechoserver
