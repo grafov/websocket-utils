@@ -24,13 +24,15 @@ package main
 
 import (
 	"flag"
-	"github.com/gorilla/websocket"
-	"github.com/kdar/factorlog"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
 	"time"
+
+	"github.com/gorilla/websocket"
+	"github.com/kdar/factorlog"
 )
 
 const (
@@ -71,7 +73,7 @@ func init() {
 		logFmt = `%{Color "red" "ERROR"}%{Color "red" "FATAL"}%{Color "yellow" "WARN"}%{Color "green" "INFO"}%{Color "cyan" "DEBUG"}%{Color "blue" "TRACE"}[%{Date} %{Time}] [%{SEVERITY}] %{Message}%{Color "reset"}`
 	}
 
-	log = factorlog.New(os.Stdout, factorlog.NewStdFormatter(logFmt))
+	log = factorlog.New(os.Stderr, factorlog.NewStdFormatter(logFmt))
 
 	switch {
 	case *debug:
@@ -174,7 +176,7 @@ func pingDispatcher(s *websocket.Conn) {
 			log.Info("can't ping as connection closed")
 			return
 		}
-		if err := s.WriteControl(websocket.PingMessage, []byte(time.Now().String()), time.Now().Add(WS_TIMEOUT)); err == nil {
+		if err := s.WriteControl(websocket.PingMessage, []byte(fmt.Sprintf("server at %s", time.Now().String())), time.Now().Add(WS_TIMEOUT)); err == nil {
 			log.Tracef("ping sent")
 		} else {
 			log.Error("ping failed")

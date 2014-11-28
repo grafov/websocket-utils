@@ -26,9 +26,6 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"github.com/gorilla/websocket"
-	"github.com/kdar/factorlog"
-	"github.com/peterh/liner"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -37,6 +34,10 @@ import (
 	"os/signal"
 	"strings"
 	"time"
+
+	"github.com/gorilla/websocket"
+	"github.com/kdar/factorlog"
+	"github.com/peterh/liner"
 )
 
 var (
@@ -83,7 +84,7 @@ func init() {
 		logFmt = `%{Color "red" "ERROR"}%{Color "red" "FATAL"}%{Color "yellow" "WARN"}%{Color "green" "INFO"}%{Color "cyan" "DEBUG"}%{Color "blue" "TRACE"}[%{Date} %{Time}] [%{SEVERITY}] %{Message}%{Color "reset"}`
 	}
 
-	log = factorlog.New(os.Stdout, factorlog.NewStdFormatter(logFmt))
+	log = factorlog.New(os.Stderr, factorlog.NewStdFormatter(logFmt))
 
 	switch {
 	case *debug:
@@ -181,7 +182,6 @@ func (c wscon) dispatch(closed chan bool) {
 		case text := <-c.TextIn:
 			err = c.send(websocket.TextMessage, text)
 		case msg := <-c.Inbox:
-			ticker = time.Tick(6 * time.Second)
 			switch msg.Op {
 			case websocket.TextMessage, websocket.BinaryMessage:
 				c.TextOut <- msg.Payload
@@ -189,8 +189,10 @@ func (c wscon) dispatch(closed chan bool) {
 				err = c.send(websocket.CloseMessage, nil)
 			}
 		case <-ticker:
-			if err = c.Conn.WriteControl(websocket.PingMessage, []byte(time.Now().String()), time.Now().Add(6*time.Second)); err == nil {
-				log.Tracef("ping sent")
+			if err = c.Conn.WriteControl(websocket.PingMessage, []byte(fmt.Sprintf("client at %s", time.Now().String())), time.Now().Add(10*time.Second)); err == nil {
+				log.Tracef("ping sent by client")
+			} else {
+				log.Trace("can't send ping: %s", err)
 			}
 		}
 		if err != nil {
@@ -257,10 +259,10 @@ func (c wscon) textIO() {
 		if text, err := line.Prompt(fmt.Sprintf("%s%s >> ", bindURL.Host, bindURL.Path)); err != nil {
 			log.Print("Error reading line: ", err)
 		} else {
-			if len(text) == 0 {
+			cmdline := strings.TrimSpace(text)
+			if len(cmdline) == 0 {
 				continue
 			}
-			cmdline := strings.TrimSpace(text)
 			switch cmdline[0] {
 			case '!': // get output from external cmd
 				cmd := exec.Command("bash", "-c", cmdline[1:])
