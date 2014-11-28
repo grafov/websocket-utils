@@ -30,13 +30,9 @@ You need go environment then install external packages:
     go get github.com/kdar/factorlog
     go get github.com/peterh/liner
 
-Then install and update package with:
-
-    go get github.com/grafov/websocket-utils
-
 For go 1.3 just use `build -i` for autoinstall external packages during build.
 
-Makefile supplied to use `make` instead direct usage of go compiler.
+Makefile supplied to use [`make`](http://www.gnu.org/software/make/) instead direct usage of go compiler.
 
     make deps && make build && make install
 
