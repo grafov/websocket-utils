@@ -10,4 +10,5 @@ steps:
   image: golang
   commands:
   - go get
-  - go test
+  - go test wsclient.go
+  - go test wsechoserver.go
