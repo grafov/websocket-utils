@@ -19,43 +19,49 @@ Prebuilt binaries provided for Linux x86_64:
 * https://drone.io/github.com/grafov/websocket-utils/files/wsechoserver
 * https://drone.io/github.com/grafov/websocket-utils/files/wsclient
 
-Download and place them to $PATH.
+Download and place them to `$PATH`.
 
 Build from source
 -----------------
 
-You need go environment then install external packages:
+The utilities use external libraries:
 
-    go get github.com/gorilla/websocket
-    go get github.com/kdar/factorlog
-    go get github.com/peterh/liner
+	github.com/gorilla/websocket
+	github.com/kdar/factorlog
+	github.com/peterh/liner
 
-For go 1.3 just use `build -i` for autoinstall external packages during build.
+They are vendored with `dep` so you don't need to load anything else.
 
-Makefile supplied to use [`make`](http://www.gnu.org/software/make/) instead direct usage of go compiler.
+Makefile supplied for using [`make`](http://www.gnu.org/software/make/)
+instead of direct call of go compiler.
 
-    make deps && make build && make install
+	make build && make install
 
 Echo server
 ===========
 
-Just run it with `-verb` and/or `-debug` args. By default it listen on localhost:48084 but you may point it to another host:port with `-listen` parameter.
+Run it with `-verb` and/or `-debug` args. By default it listen on
+localhost:48084 but you may point it to another host:port with
+`-listen` parameter.
 
 Client
 ======
 
-After connect to websocket server client waits for input. Any input will send to remote server. Except two special cases:
+After connect to websocket server client waits for input. Any input
+will send to remote server. Except two special cases:
 
-1. If you start text with `!` followed by command(s) then external command(s) will executed and its output will send to a server:
+1. If you start text with `!` followed by command(s) then external
+   command(s) will executed and its output will send to a server:
 
-    `! ls *.txt; date`
+	`! ls *.txt; date`
 
-2. If you start text with `<` followed by filename then this file loads and its content send to server.
+2. If you start text with `<` followed by filename then this file
+   loads and its content send to server.
 
-    `< sample.json`
+	`< sample.json`
 
 Any other string sequences will send as is.
 
 Try it for example as:
 
-    wsclient -bind=echo.websocket.org
+	wsclient -bind=echo.websocket.org

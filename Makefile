@@ -6,12 +6,6 @@ INSTALL=install
 
 all: wsclient wsechoserver
 
-# To build with dependencies for go >= 1.3 use `go build -i` and skip step below
-deps:
-	go get github.com/gorilla/websocket
-	go get github.com/kdar/factorlog
-	go get github.com/peterh/liner
-
 wsclient: wsclient.go
 	go build -ldflags $(LDFLAGS) -o wsclient wsclient.go
 
@@ -30,3 +24,5 @@ install: all
 # Remove temporary files
 clean:
 	rm wsclient wsechoserver
+
+.PHONY: all wsclient wsechoserver install test clean
