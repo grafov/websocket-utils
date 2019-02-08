@@ -8,21 +8,8 @@ Currently are:
 * wsclient — allows you to establish websocket connection with websocket server and send text messages from command line.
 * wsechoserver — just reply back messages it received from websocket client.
 
-Install
+Build [![Build Status](https://cloud.drone.io/api/badges/grafov/websocket-utils/status.svg)](https://cloud.drone.io/grafov/websocket-utils)
 =======
-
-Binary downloads [![Build Status](https://drone.io/github.com/grafov/websocket-utils/status.png)](https://drone.io/github.com/grafov/websocket-utils/latest)
-----------------
-
-Prebuilt binaries provided for Linux x86_64:
-
-* https://drone.io/github.com/grafov/websocket-utils/files/wsechoserver
-* https://drone.io/github.com/grafov/websocket-utils/files/wsclient
-
-Download and place them to `$PATH`.
-
-Build from source
------------------
 
 The utilities use external libraries:
 
